@@ -1,0 +1,58 @@
+name: Example clients smoke test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-example:
+    name: Python example
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run public Python example against the live API
+        shell: bash
+        run: |
+          set -euo pipefail
+          python python/example.py | tee /tmp/greenguru-python-example.txt
+          test -s /tmp/greenguru-python-example.txt
+          grep -q 'Event date:' /tmp/greenguru-python-example.txt
+          grep -q 'Source URL:' /tmp/greenguru-python-example.txt
+
+  javascript-example:
+    name: JavaScript example
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run public JavaScript example against the live API
+        shell: bash
+        run: |
+          set -euo pipefail
+          node javascript/example.mjs | tee /tmp/greenguru-javascript-example.txt
+          test -s /tmp/greenguru-javascript-example.txt
+          grep -q 'Event date:' /tmp/greenguru-javascript-example.txt
+          grep -q 'Source URL:' /tmp/greenguru-javascript-example.txt
